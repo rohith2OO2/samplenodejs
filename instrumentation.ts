@@ -60,7 +60,12 @@ const sdk = new NodeSDK({
       ...exporterConfig,
     })
   ),
-  instrumentations: [getNodeAutoInstrumentations()],
+  instrumentations: [getNodeAutoInstrumentations({
+      '@opentelemetry/instrumentation-fs': {
+        enabled: false,
+      },
+    }
+  )],
 });
 
 sdk.start();
