@@ -12,12 +12,27 @@ import {
 } from "@opentelemetry/sdk-logs";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { logs } from "@opentelemetry/api-logs";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { BatchSpanProcessor, SamplingResult } from "@opentelemetry/sdk-trace-base";
+import { Sampler, SamplingDecision } from "@opentelemetry/sdk-trace-base";
+import { Context, SpanKind, Attributes, Link } from "@opentelemetry/api";
 
 // diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 const BASE_URL = "https://otel.kloudmate.com:4318";
 const SERVICE_NAME = "node-autoinstumentation";
+
+class CustomSampler implements Sampler {
+  shouldSample(context: Context, traceId: string, spanName: string, spanKind: SpanKind, attributes: Attributes, links: Link[]): SamplingResult {
+    if((attributes['http.url'] as string)?.endsWith('/v1/logs'))
+      return {decision: SamplingDecision.NOT_RECORD}
+    
+    return {decision: SamplingDecision.RECORD_AND_SAMPLED, attributes}
+  }
+
+  toString(): string {
+    return 'custom sampler'
+  }
+}
 
 const exporterConfig = {
   headers: {
@@ -54,6 +69,7 @@ const sdk = new NodeSDK({
     exporter: metricExporter,
     exportIntervalMillis: 1000,
   }),
+  sampler: new CustomSampler(),
   spanProcessor: new BatchSpanProcessor(
     new OTLPTraceExporter({
       url: `${BASE_URL}/v1/traces`,
