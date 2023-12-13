@@ -1,7 +1,9 @@
 'use strict'
+import { logs } from '@opentelemetry/api-logs'
 import config from '../../config'
-const winston = require('winston')
-const { createLogger, format, transports } = winston
+import winston from 'winston'
+const { createLogger, format, transports, Logger } = winston
+import Transport  from 'winston-transport'
 //import config from '../../config';
 const moment = require('moment-timezone')
 
@@ -12,13 +14,27 @@ const appendTimestamp = format((info, opts) => {
 	return info
 })
 
+const SERVICE_NAME = "node-autoinstumentation";
+
+class CustomTransport extends Transport {
+	constructor(opts) {
+	  super(opts);
+	}
+	logger = logs.getLogger(SERVICE_NAME);
+  
+	log(msg, callback) {
+	  this.logger.emit({ body: msg?.message, severityText: msg?.level || "info" });
+	  callback();
+	}
+  }
+
 const customLogger = module => {
 	const logger = createLogger({
 		//TODO: Need to read the level from config
 		level: config.logger.level || 'info',
 		// colorize: true,
 		format: combine(label({ label: module }), appendTimestamp({ tz: 'Asia/Kolkata' }), myFormat),
-		transports: [new transports.Console()],
+		transports: [new transports.Console(), new CustomTransport({})],
 	})
 
 	logger.stream = {
