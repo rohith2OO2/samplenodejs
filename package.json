@@ -31,10 +31,12 @@
   },
   "scripts": {
     "build": "tsc --build",
-    "start": "tsc-watch   --onSuccess \"nodemon  -r ./instrumentation.ts   dist/app.js \"",
+    "start": "tsc-watch --onSuccess \"nodemon -r ./instrumentation.ts dist/app.js\"",
     "debug": "tsc-watch --onSuccess \"nodemon -r ./instrumentation.ts dist/app.js\"",
-    "debug-brk": "tsc-watch --onSuccess \"nodemon  --inspect-brk    dist/app.js\""
+    "debug-brk": "tsc-watch --onSuccess \"nodemon --inspect-brk dist/app.js\"",
+    "test": "echo \"No tests configured yet\" && exit 0"
   },
+
   "dependencies": {
     "@opentelemetry/api": "^1.6.0",
     "@opentelemetry/api-logs": "^0.45.1",
